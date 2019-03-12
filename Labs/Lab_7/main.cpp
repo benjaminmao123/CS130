@@ -53,7 +53,7 @@ void GL_render()
 		
 		for (unsigned int j = 0; j < ControlPoints.size(); ++j) 
 		{
-			float bin = binomial(ControlPoints.size(), j, i);
+			float bin = binomial(ControlPoints.size() - 1, j, i);
 			temp_res += bin * ControlPoints[j];
 		}
 		
