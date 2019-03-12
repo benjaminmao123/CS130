@@ -83,10 +83,13 @@ struct driver_state
 
 struct Edge
 {
-    Edge(const vec4 &start_vertex, const vec4 &end_vertex, const data_geometry &start_data, const data_geometry &end_data, const int &Index)
+    Edge(const vec4 &start_vertex, const vec4 &end_vertex, const data_geometry &start_data, const data_geometry &end_data, const int &Index, const string &sign)
         : start_vertex(start_vertex), end_vertex(end_vertex), start_data(start_data), end_data(end_data)
     {
-        beta = (-end_vertex[3] - end_vertex[Index]) / (start_vertex[Index] + start_vertex[3] - end_vertex[3] - end_vertex[Index]);
+        if (sign == "+")
+            beta = (end_vertex[3] - end_vertex[Index]) / (start_vertex[Index] - start_vertex[3] + end_vertex[3] - end_vertex[Index]);
+        else       
+            beta = (-end_vertex[3] - end_vertex[Index]) / (start_vertex[Index] + start_vertex[3] - end_vertex[3] - end_vertex[Index]);
     }
 
     vec4 start_vertex, end_vertex;
@@ -119,9 +122,21 @@ void clip_triangle(driver_state& state, const data_geometry* in[3],int face=0);
 // fragments, calling the fragment shader, and z-buffering.
 void rasterize_triangle(driver_state& state, const data_geometry* in[3]);
 
-void Interpolate(driver_state &state, const Edge & edge, data_geometry & new_data, const int & Index, const data_geometry *in[3]);
-void Interpolate(driver_state &state, const vec3 &bary_prime, const vec3 &w, data_fragment &d_frag, const data_geometry *in[3]);
+void RenderType_Triangle(driver_state &state, data_geometry g[3], data_vertex v[3], const data_geometry *in[3]);
+void RenderType_Indexed(driver_state &state, data_geometry g[3], data_vertex v[3], const data_geometry *in[3]);
+void RenderType_Fan(driver_state &state, data_geometry g[3], data_vertex v[3], const data_geometry *in[3]);
+void RenderType_Strip(driver_state &state, data_geometry g[3], data_vertex v[3], const data_geometry *in[3]);
+
+void Interpolate(driver_state &state, const Edge &edge, data_geometry &new_data, const int &Index, const data_geometry *in[3]);
+vec4 Compute_Intersection(const float &beta, const vec4 &start_vertex, const vec4 &end_vertex);
 vector<vector<data_geometry>> Generate_Triangles(driver_state &state, vector<Edge> &edges, const data_geometry *in[3], const int &Index);
-vector<vector<data_geometry>> Cut_Triangle(driver_state &state, const int & Index, const data_geometry *in[3]);
+vector<vector<data_geometry>> pCut_Triangle(driver_state &state, const int & Index, const data_geometry *in[3]);
+vector<vector<data_geometry>> nCut_Triangle(driver_state &state, const int &Index, const data_geometry *in[3]);
+
+void Interpolate(driver_state &state, const vec3 &beta, const vec3 &w, data_fragment &d_frag, const data_geometry *in[3]);
+void Initialize_Bounds(driver_state &state, vec2 &min_index, vec2 &max_index);
+vec3 Perform_Perspective_Divide(const vec3 &w, const int &Index, const data_geometry *in[3]);
+vec2 Compute_Pixel_Coordinates(driver_state &state, const vec3 &x, const vec3 &y, const int &Index);
+float Compute_Area(const vec2 &v0, const vec2 &v1, const vec2 &p);
 
 #endif
